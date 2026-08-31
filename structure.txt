@@ -1,0 +1,26 @@
+data-cleaner/
+│
+├── main.py
+├── src/
+│   ├── profile.py
+│   ├── detect_type.py
+│   │
+│   └── cleaner/
+│       │
+│       ├── cleaner.py
+│       ├── number.py
+│       ├── text.py
+│       ├── duplicate.py
+│       ├── clean_report.py
+│       └── csv_xlsx_maker.py
+│        
+│
+└── tests/
+    │
+    ├──test.py
+    ├── test_profile.py
+    ├── test_detect_type.py
+    ├── test_number.py
+    ├── test_text.py
+    ├── test_duplicate.py
+    └── test_report.py
