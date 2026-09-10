@@ -1,23 +1,23 @@
-
-
+import regex as re
 import pandas as pd
+from email_validator import validate_email,EmailNotValidError
 
 
 
-
-class analizer_report:
+class general:
 
     def __init__(self):
         self.rows = 0
         self.columns = 0 
         self.columns_name = []
-        self.colums_type = []
+        self.colums_type = {}
         self.missing_data = {}
         self.empty_data = {}
         self.duplicate_row = 0
         self.duplicate_columns = 0
         self.unique_data = {}
         self.memory_usage = 0
+        
 
 
     def __str__(self):
@@ -35,9 +35,36 @@ class analizer_report:
         )
 
 
+class stats:
+    def __init__(self):
+        self.count = {}
+        self.missing_ratio = {}
+        self.unique_count = {}
+        self.unique_ratio = {}
+        self.length_std = {}
+        self.digit_ratio = {}
+        self.letter_ratio = {}
+        self.whitespace_ratio = {}
+        self.special_ratio = {}
 
-def analizer(df:pd.DataFrame):
-    report = analizer_report()
+    def __str__(self):
+        return (
+            f"Count: {self.count}\n"
+            f"Missing_ratio: {self.missing_ratio}\n"
+            f"Unique_count: {self.unique_count}\n"
+            f"Unique_ratio: {self.unique_ratio}\n"
+            f"Length_std: {self.length_std}\n"
+            f"Digit_ratio: {self.digit_ratio}\n"
+            f"Letter_ratio: {self.letter_ratio}\n"
+            f"Whitespace_ratio: {self.whitespace_ratio}\n"
+            f"Special_ratio: {self.special_ratio}\n"
+        )
+
+#####################################################GEN_REPORT##################################################
+
+    
+def general_data(df:pd.DataFrame):
+    report = general()
 
     report.rows = df.shape[0]
     report.columns = df.shape[1]
@@ -64,3 +91,108 @@ def analizer(df:pd.DataFrame):
 
     return report
 
+
+#####################################################STATS_REPORT##################################################
+
+
+def stats_data(df:pd.DataFrame):
+    stats_data = stats()
+
+    for val in df.columns:
+        stats_data.count[val] = len(df[val].dropna())
+
+    for val in df.columns:
+        stats_data.missing_ratio[val] = round(float(df[val].isna().mean())*100,2)
+    
+    for val in df.columns:
+        stats_data.unique_count[val] = df[val].nunique()
+
+    for val in df.columns:
+        stats_data.unique_ratio[val] = round(float(df[val].nunique()/df[val].count())*100,2)
+
+    for val in df.columns:
+        stats_data.length_std[val] = round(float(df[val].dropna().astype(str).str.len().std()),2)
+
+    for val in df.columns:
+        value = df[val].dropna().astype("string").str.len()
+        stats_data.digit_ratio[val] = round(float((df[val].dropna().astype("string").str.count(r"\d")/value).mean())*100,3)
+
+    for val in df.columns:
+        value = df[val].dropna().astype("string").str.len()
+        stats_data.letter_ratio[val] = round(float((df[val].dropna().astype("string").str.count(r"[A-Za-z]")/value).mean())*100,3)
+
+    for val in df.columns:
+        value = df[val].dropna().astype("string").str.len()
+        stats_data.whitespace_ratio[val] = round(float((df[val].dropna().astype("string").str.count(r"\s")/value).mean())*100,3)
+
+    for val in df.columns:
+        value = df[val].dropna().astype("string").str.len()
+        stats_data.special_ratio[val] = round(float((df[val].dropna().astype("string").str.count(r"[@_+()%$&-]")/value).mean())*100,3)
+    
+     
+
+    return stats_data
+
+
+#####################################################REGEX_REPORT##################################################
+
+
+data_pattern = {
+
+    "ID": r"^[A-Za-z0-9]+[\s_-]?\d{3,15}[\s_\.-]?[A-Za-z0-9]?$",
+    "Email":  r"^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+[@]+[A-Za-z0-9-]+[.,][A-Za-z0-9.-]+$",
+    "Phone_number": r"^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?:\s*x(\d+))?\s*$",
+    "URL": r"^https?://(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}(?:/[^\s]*)?$",
+    "Currency": r"^(?:[€$£¥]\s*)?\d+(?:,\d{3})*(?:\.\d{1,4})?(?:\s+[A-Za-z]{3})?$",
+    "Percentage": r"^\d+(?:\.\d+)?%?$",
+    "Rating": r"^(?:[1-5](?:\.\d)?)(?:\s+[A-Za-z]+)?$",
+    "Date": None
+}
+
+"""header_pattern = {
+    "Email" : r"\b([eg][\s_-]*)?(mail)(?:[\s_-]*(?:address|id))?\b",
+    "Phone" : r"\b(?:tele[\s_-]*)?(?:phone|tele)\b",
+    "URL" : r"\b(?:web|link)([\s_-]*(site))?\b",
+    "Currency" : r"\b(?:price|amount|cost|total|revenue|salary|balance|currency)([\s_-]*)?\b",
+    "Percentage" : r"\b(?:percentage|percent|pct|rate|discount|tax|growth|margin)\b",
+    "Rating" : r"\b(rating)",
+    "Date" : r"\b(?:date|day|created|year|updated)\b"
+}"""
+
+def regex_data(df:pd.DataFrame,report:object):
+    regex_result = {}
+    def email_validate(value):
+        try:
+            validate_email(str(value),check_deliverability=False)
+            return True
+        except EmailNotValidError :
+            return False
+
+    for col_name in report.columns_name:
+        data_capsule = {}
+        for pattern in data_pattern :
+            if pattern == "Date":
+                data = pd.to_datetime(df[col_name],format="mixed",errors="coerce")
+                percentage = float(data.notna().mean() * 100)
+                data_capsule[pattern] = round(percentage,3)
+                
+            elif pattern=="Email":
+                data = df[col_name].astype("string").str.strip().str.match(data_pattern["Email"],na=False).sum()
+                percentage = float((data/(report.rows-report.duplicate_row))*100)
+                data_capsule[pattern] = round(percentage,3)
+                #mask = ~df[col_name].astype("string").apply(email_validate)
+
+                #print(df.loc[mask, col_name].to_list())
+
+            else :  
+                data = df[col_name].astype("string").str.strip().str.match(data_pattern[pattern],na=False).sum()
+                percentage = float((data/report.rows)*100)
+
+                data_capsule[pattern] = round(percentage,3)
+                
+
+        #data_capsule[col_name] = {report.colums_type[col_name]}
+        regex_result[col_name]= data_capsule
+        continue   
+
+    return regex_result
