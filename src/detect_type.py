@@ -1,86 +1,101 @@
 import copy
+import pandas as pd
+import sys 
 
+
+def required_input(message):
+
+    while True:
+        value = input(message).strip()
+        if value:
+            return value
+
+        print("This feild cant be empty")
+
+def make_table(table_dict:dict):
+    type_table = pd.DataFrame.from_dict(table_dict,orient="index")
+    type_table.insert(0,"No",range(1,len(type_table)+1))
+    print(type_table.round(2).to_string())
+
+    return 0
 
 def phone(phone_number: dict,phone_regex:dict,col_name:str):
 
     mark = 0
-    mark += (phone_regex["Phone_number"])*0.4
-    mark += phone_number["digit_ratio"]*0.35
-    mark += max(0,20-((phone_number["length_std"])*10))
+    mark += (phone_regex["Phone_number"])*0.5
+    mark += phone_number["digit_ratio"]*0.3
+    mark += max(0,15-((phone_number["length_std"])*7.5))
     mark += phone_number["special_ratio"]*0.05
 
-    return ("Phone",mark)
+    return ("Phone",round(mark,2))
 
-    
+def email(Email: dict,email_regex:dict,col_name:str):
 
-
-
-
-def email(phone_number: dict,email_regex:dict,col_name:str):
-
-    local_arr = ["letter_ratio", "digit_ratio","special_ratio"]
     mark = 0
+    mark += (email_regex["Email"])*0.6
+    mark += Email["letter_ratio"]*0.25
+    mark += Email["digit_ratio"]*0.1
+    mark += Email["special_ratio"]*0.05
 
-    top3 = sorted(phone_number.items(), key=lambda x: x[1], reverse=True)[:3][::-1]
-
-    for [i, value] in enumerate(top3):
-        if value in local_arr:
-            mark+=0.5
-
-
-    if 80<= email_regex["Email"] <=100:
-        mark += 2
-    elif 50<= email_regex["Email"] <80:
-        mark += 1.5
-    elif 40<= email_regex["Email"] <50:
-            mark += 0.5
-    else :
-        mark += 0
-
-    mark_percentage = (mark/5)*100
-
-    return ["Email" , mark_percentage]
+    return ("Email",round(mark,2))
 
 
-def id(phone_number: dict,email_regex:dict,col_name:str):
 
-    local_arr = ["special_ratio", "digit_ratio", "unique_ratio","letter_ratio"]
+def id(id: dict,id_regex:dict,col_name:str):
+
     mark = 0
+    mark += (id_regex["ID"])*0.45
+    mark += max(0,40-((id["length_std"])*20))
+    mark += id["letter_ratio"]*0.05
+    mark += id["digit_ratio"]*0.05
+    mark += id["special_ratio"]*0.05
+   
+    return ["ID" , round(mark,2)]
 
-    top3 = sorted(phone_number.items(), key=lambda x: x[1], reverse=True)[:3][::-1]
 
-    for [i, value] in enumerate(top3):
-        """if value[0] in local_arr:
-            mark+=0.5"""
+def date(date: dict,date_regex:dict,col_name:str):
 
-    if 0 < phone_number["length_std"]  < 1:
-        mark += 1.5
-    elif 1 < phone_number["length_std"]  < 1.5:
-        mark += 0.5
-    elif 1.5 < phone_number["length_std"] < 2:
-        mark += 0.25
-    else :
-        mark +=0
-    print(col_name,mark)
-    if 80<= email_regex["ID"] <=100:
-        mark += 2
-    elif 50<= email_regex["ID"] <80:
-        mark += 0.5
-    elif 40<= email_regex["ID"] <50:
-            mark += 0.25
-    else :
-        mark += 0
+    mark = 0   
+    mark += (date_regex["Date"])*0.7
+    mark += date["letter_ratio"]*0.05
+    mark += date["digit_ratio"]*0.1
+    mark += date["special_ratio"]*0.05
+   
+    return ["Date" , round(mark,2)]
 
-    mark_percentage = (mark/5)*100
+def currency(currency: dict,currency_regex:dict,col_name:str):
 
-    return ["ID" , mark_percentage]
+    mark = 0   
+    mark += currency_regex["Currency"] * 0.2
+    mark += currency["deciaml_ratio"] *0.6
+    mark += currency["special_ratio"] * 0.2
+   
+    return ["Currency" , round(mark,2)]
+
+def percentage(percentage:dict , percentage_regex:dict , col_name:str):
+    mark=0
+    mark+= percentage_regex["Percentage"]*0.3
+    mark+= percentage["digit_ratio"]*0.3
+    mark+= percentage["deciaml_ratio"]*0.2
+    mark+= percentage["special_ratio"]*0.2
+
+    return ["Percentage" , round(mark,2)]
+
+def rating(rating:dict , rating_regex:dict , col_name:str):
+    mark=0
+    mark+= rating_regex["Rating"]*0.5
+    mark+= rating["digit_ratio"]*0.25
+    mark+= rating["letter_ratio"]*0.2
+    mark+= rating["special_ratio"]*0.05
+
+    return ["Rating" , round(mark,2)]
 
 
 
 def dict_make(stats_report: object, gen_report: object,regex_report:dict):
     stats_dict = {}
     packet = {}
-    arr = [id,email,phone]
+    arr = [id,email,phone,date,currency,percentage,rating]
 
     type_samples = {}
 
@@ -90,6 +105,7 @@ def dict_make(stats_report: object, gen_report: object,regex_report:dict):
         packet["letter_ratio"] = stats_report.letter_ratio[col_name]
         packet["whitespace_ratio"] = stats_report.whitespace_ratio[col_name]
         packet["special_ratio"] = stats_report.special_ratio[col_name]
+        packet["deciaml_ratio"] = stats_report.deciaml_ratio[col_name]
         packet["length_std"] = stats_report.length_std[col_name]
 
         stats_dict[col_name] = packet.copy()
@@ -102,3 +118,36 @@ def dict_make(stats_report: object, gen_report: object,regex_report:dict):
         type_samples[col_name] = local_dict
 
     return type_samples
+
+
+def detect(type_samples:dict,gen_report:object):
+    final_type = {}
+
+    for col_name,scores in type_samples.items():
+        pocket = {}
+        First_type = max(type_samples[col_name],key=type_samples[col_name].get)
+        pocket["First_type"] = First_type
+        pocket["Score"] = scores[First_type]
+        pocket["Secountary"] = gen_report.colums_type[col_name]
+
+        final_type[col_name] = pocket
+
+    make_table(final_type)
+
+    while True:
+        choice= required_input("Enter the col_name which you wanna make any changes in the type Y/N").lower()
+
+        if choice=='y':
+            new_type = required_input("Enter the new type ")
+            section_list = required_input("Enter the col number  which you wanna  apply this change : ").split()
+            section_list = [int(x) for x in section_list]
+            
+            for i in section_list:
+                final_type[gen_report.columns_name[i-1]]["First_type"] = new_type
+
+        else :
+            break
+
+
+    return final_type
+

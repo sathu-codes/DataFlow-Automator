@@ -46,6 +46,7 @@ class stats:
         self.letter_ratio = {}
         self.whitespace_ratio = {}
         self.special_ratio = {}
+        self.deciaml_ratio = {}
 
     def __str__(self):
         return (
@@ -58,6 +59,7 @@ class stats:
             f"Letter_ratio: {self.letter_ratio}\n"
             f"Whitespace_ratio: {self.whitespace_ratio}\n"
             f"Special_ratio: {self.special_ratio}\n"
+            f"Deciaml_ratio : {self.deciaml_ratio}\n"
         )
 
 #####################################################GEN_REPORT##################################################
@@ -129,7 +131,9 @@ def stats_data(df:pd.DataFrame):
         value = df[val].dropna().astype("string").str.len()
         stats_data.special_ratio[val] = round(float((df[val].dropna().astype("string").str.count(r"[@_+()%$&-]")/value).mean())*100,3)
     
-     
+    for val in df.columns:
+        value = df[val].dropna().astype("string").str.strip().str.contains(r"\d+\.(?:\d*[1-9]\d*)",regex=True,na=False).mean()*100
+        stats_data.deciaml_ratio[val]=round(float(value),3)
 
     return stats_data
 
@@ -146,7 +150,7 @@ data_pattern = {
     "Currency": r"^(?:[€$£¥]\s*)?\d+(?:,\d{3})*(?:\.\d{1,4})?(?:\s+[A-Za-z]{3})?$",
     "Percentage": r"^\d+(?:\.\d+)?%?$",
     "Rating": r"^(?:[1-5](?:\.\d)?)(?:\s+[A-Za-z]+)?$",
-    "Date": None
+    "Date": r"^(?:\d{4}[-/.]\d{1,2}[-/.]\d{1,2}|\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}|\d{1,2}(?:st|nd|rd|th)?[-/\s.][A-Za-z]{3,9}[-/\s.]\d{2,4}|[A-Za-z]{3,9}[-/\s.]\d{1,2}(?:st|nd|rd|th)?[-/\s.,]+\d{2,4})$"
 }
 
 """header_pattern = {
@@ -171,12 +175,12 @@ def regex_data(df:pd.DataFrame,report:object):
     for col_name in report.columns_name:
         data_capsule = {}
         for pattern in data_pattern :
-            if pattern == "Date":
+            """if pattern == "Date":
                 data = pd.to_datetime(df[col_name],format="mixed",errors="coerce")
                 percentage = float(data.notna().mean() * 100)
-                data_capsule[pattern] = round(percentage,3)
+                data_capsule[pattern] = round(percentage,3)"""
                 
-            elif pattern=="Email":
+            if pattern=="Email":
                 data = df[col_name].astype("string").str.strip().str.match(data_pattern["Email"],na=False).sum()
                 percentage = float((data/(report.rows-report.duplicate_row))*100)
                 data_capsule[pattern] = round(percentage,3)

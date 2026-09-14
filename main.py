@@ -6,7 +6,7 @@ from src.cleaner.cleaner import cleaner
 
 def start():
     try:
-        df = pd.read_excel("input/messy_data.xlsx")
+        df = pd.read_excel("input/ecommerce_sample_3_messy.xlsx")
         return df
 
     except ImportError:
@@ -30,11 +30,11 @@ if __name__ == "__main__":
     regex_report = profile.regex_data(df, gen_report)
 
     stat_dict = detect_type.dict_make(stats_report, gen_report,regex_report)
-    print(stat_dict)
 
-    #print(regex_report)
-    """
-    final_df = cleaner(df,colums_type,report)
+    final_type = detect_type.detect(stat_dict,gen_report)
+
+    
+    final_df = cleaner(df,final_type,gen_report)
     output_path = "output/clean_data.xlsx"
 
-    final_df.to_csv(output_path,index=False)"""
+    final_df.to_excel(output_path,index=False)
