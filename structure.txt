@@ -1,26 +1,40 @@
-data-cleaner/
+DataFlow Automator
 │
+├── input
 ├── main.py
-├── src/
-│   ├── profile.py
-│   ├── detect_type.py
-│   │
-│   └── cleaner/
-│       │
-│       ├── cleaner.py
-│       ├── number.py
-│       ├── text.py
-│       ├── duplicate.py
-│       ├── clean_report.py
-│       └── csv_xlsx_maker.py
-│        
-│
-└── tests/
-    │
-    ├──test.py
-    ├── test_profile.py
+├── output
+├── src
+│   ├── cleaner
+│   │   ├── cleaner.py
+│   │   ├── country.py
+│   │   ├── currency.py
+│   │   ├── date.py
+│   │   ├── duplicate.py
+│   │   ├── gmail.py
+│   │   ├── id.py
+│   │   ├── __init__.py
+│   │   ├── link.py
+│   │   ├── name.py
+│   │   ├── number.py
+│   │   ├── percentage.py
+│   │   ├── phone_number.py
+│   │   ├── quantity.py
+│   │   ├── rating.py
+│   │   └── text.py
+│   ├── detect_type.py
+│   ├── formatter
+│   │   ├── main_format.py
+│   │   └── src_format
+│   │       ├── analizer.py
+│   │       └── formatter
+│   │           ├── decorator.py
+│   │           └── space.py
+│   ├── __init__.py
+│   └── profile.py
+├── structure.txt
+└── tests
     ├── test_detect_type.py
-    ├── test_number.py
-    ├── test_text.py
     ├── test_duplicate.py
-    └── test_report.py
+    ├── test_number.py
+    ├── test_profile.py
+    └── test_text.py

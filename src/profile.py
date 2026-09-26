@@ -10,6 +10,7 @@ class general:
         self.rows = 0
         self.columns = 0 
         self.columns_name = []
+        self.columns_len = {}
         self.colums_type = {}
         self.missing_data = {}
         self.empty_data = {}
@@ -24,6 +25,7 @@ class general:
         return(
             f"Rows: {self.rows}\n"
             f"Columns: {self.columns}\n"
+            f"Columns_len : {self.columns_len}\n"
             f"Columns_name: {self.columns_name}\n"
             f"Colums_type: {self.colums_type}\n"
             f"Missing_data: {self.missing_data}\n"
@@ -88,8 +90,11 @@ def general_data(df:pd.DataFrame):
 
         report.empty_data[column] = int(empty_count)
     
-
+    
     report.duplicate_columns = int(df.columns.duplicated().sum())
+
+   
+
 
     return report
 

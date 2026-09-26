@@ -40,7 +40,7 @@ def cleaner(df:pd.DataFrame,colums_type:dict,report:object):
             possition = df.columns.get_loc(col_name)
 
             df  = df.drop(columns=[col_name])  
-            
+            print(df.columns)
             df.insert(possition,"First Name",new_cols.iloc[:,0])
             df.insert(possition+1,"Last Name",new_cols.iloc[:,1])
 
